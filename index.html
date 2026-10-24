@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#fdeff2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Hadicha — Xarajat daftari</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Poppins', 'Arial Rounded', system-ui, -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        body {
+            background: linear-gradient(160deg, #fdeff2 0%, #f8e2f0 35%, #f5dcf0 65%, #f3d9f5 100%);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 12px;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Gul barglari animatsiyasi */
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            top: -40px;
+            width: 22px;
+            height: 22px;
+            opacity: 0;
+            animation: petalFall linear infinite;
+            will-change: transform, opacity;
+        }
+
+        .petal svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+            filter: drop-shadow(0 2px 3px rgba(200, 120, 150, 0.15));
+        }
+
+        @keyframes petalFall {
+            0% { transform: translateY(-40px) translateX(0) rotate(0deg); opacity: 0; }
+            8% { opacity: 1; }
+            50% { transform: translateY(50vh) translateX(60px) rotate(180deg); opacity: 0.9; }
+            92% { opacity: 0.8; }
+            100% { transform: translateY(105vh) translateX(-40px) rotate(420deg); opacity: 0; }
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            background: rgba(255, 245, 250, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 32px;
+            box-shadow: 0 20px 50px rgba(230, 150, 180, 0.28), 
+                        0 6px 20px rgba(200, 120, 160, 0.15),
+                        inset 0 1px 3px rgba(255, 255, 255, 0.9);
+            padding: 22px 16px 24px;
+            border: 1.5px solid rgba(255, 220, 235, 0.7);
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        .app-header h1 {
+            font-size: 1.9rem;
+            font-weight: 400;
+            color: #b3506b;
+            text-shadow: 2px 3px 10px rgba(255, 200, 220, 0.8);
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .app-header h1 i {
+            color: #d46b8a;
+            font-size: 1.5rem;
+            filter: drop-shadow(0 3px 5px rgba(210, 120, 140, 0.4));
+        }
+
+        .app-header p {
+            color: #a5657a;
+            font-size: 0.82rem;
+            font-weight: 300;
+            margin-top: 4px;
+            letter-spacing: 0.8px;
+            font-style: italic;
+        }
+
+        /* Ulanish holati indikatori */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #a5657a;
+            margin-top: 6px;
+            min-height: 18px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ccc;
+            transition: 0.3s;
+        }
+
+        .status-dot.online { background: #5b9b7a; box-shadow: 0 0 6px #5b9b7a; }
+        .status-dot.offline { background: #c75b7a; }
+        .status-dot.loading { background: #e8b94a; animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #fce3ec, #f7d0e2);
+            border-radius: 28px;
+            padding: 18px 14px;
+            text-align: center;
+            margin-bottom: 18px;
+            box-shadow: 0 12px 22px rgba(210, 130, 160, 0.22), 
+                        inset 0 -2px 0 rgba(255, 255, 255, 0.7),
+                        inset 0 3px 8px rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 240, 245, 0.9);
+        }
+
+        .balance-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: #9e5a73;
+            font-weight: 400;
+        }
+
+        .balance-amount {
+            font-size: 2.3rem;
+            font-weight: 500;
+            color: #722f4a;
+            line-height: 1.15;
+            word-break: break-word;
+            text-shadow: 0 2px 6px rgba(255, 255, 255, 0.9);
+            margin: 4px 0 2px;
+        }
+
+        .balance-amount small {
+            font-size: 1rem;
+            font-weight: 300;
+            color: #a05f79;
+            margin-left: 4px;
+        }
+
+        .balance-stats {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 10px;
+            font-size: 0.72rem;
+            color: #8e4e66;
+        }
+
+        .balance-stats span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.45);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .income-stat i { color: #5b9b7a; }
+        .expense-stat i { color: #c75b7a; }
+
+        .form-section {
+            background: rgba(255, 240, 248, 0.72);
+            border-radius: 26px;
+            padding: 18px 14px;
+            margin-bottom: 18px;
+            box-shadow: 0 10px 22px rgba(200, 140, 170, 0.15), 
+                        inset 0 1px 5px #fff;
+            border: 1px solid rgba(255, 220, 235, 0.9);
+        }
+
+        .form-title {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #a54a6b;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px dashed #f3c1d4;
+            padding-bottom: 8px;
+        }
+
+        .form-title i { color: #c96585; font-size: 1.05rem; }
+
+        .input-group { margin-bottom: 14px; }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #8d5169;
+            margin-bottom: 5px;
+            margin-left: 6px;
+            letter-spacing: 0.4px;
+        }
+
+        .input-group label i {
+            margin-right: 5px;
+            color: #bd6d8a;
+            width: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 13px 16px;
+            border: none;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 50px;
+            font-size: 16px;
+            color: #4d2a3a;
+            outline: 2px solid transparent;
+            transition: 0.2s;
+            box-shadow: 0 5px 10px rgba(190, 140, 160, 0.1), inset 0 1px 3px #fff;
+            border: 1px solid #fad3e3;
+            font-weight: 400;
+        }
+
+        .input-group input:focus {
+            outline: 2px solid #eaa9c2;
+            background: white;
+        }
+
+        .input-group input::placeholder {
+            color: #cfa2b6;
+            font-weight: 300;
+            font-size: 0.88rem;
+        }
+
+        .input-group input[type=number]::-webkit-outer-spin-button,
+        .input-group input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .input-group input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 8px;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 16px rgba(190, 130, 160, 0.22), 0 2px 5px rgba(150, 90, 120, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            touch-action: manipulation;
+        }
+
+        .btn:active { transform: scale(0.96); }
+        .btn:disabled { opacity: 0.6; pointer-events: none; }
+
+        .btn-income {
+            background: linear-gradient(145deg, #d6f0e3, #c2e8d4);
+            color: #2e7353;
+        }
+
+        .btn-expense {
+            background: linear-gradient(145deg, #f9d6e0, #f7c2d2);
+            color: #a1415e;
+        }
+
+        .list-section {
+            background: rgba(255, 240, 248, 0.72);
+            border-radius: 26px;
+            padding: 18px 12px 14px 12px;
+            box-shadow: 0 10px 22px rgba(200, 140, 170, 0.15), inset 0 1px 5px #fff;
+            border: 1px solid rgba(255, 220, 235, 0.9);
+        }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+
+        .list-header h2 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #a54a6b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .list-header h2 i { color: #c96585; font-size: 0.95rem; }
+
+        .clear-btn {
+            background: rgba(255, 240, 245, 0.85);
+            border: 1px solid #f2cddd;
+            color: #b67b91;
+            font-size: 0.72rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 30px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 400;
+            touch-action: manipulation;
+        }
+
+        .clear-btn:active { background: #fbe0ea; color: #9e4b6b; }
+
+        .transaction-list {
+            list-style: none;
+            overflow-y: auto;
+            max-height: 40vh;
+            padding-right: 2px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .transaction-list::-webkit-scrollbar { width: 4px; }
+        .transaction-list::-webkit-scrollbar-track { background: transparent; }
+        .transaction-list::-webkit-scrollbar-thumb { background: #e3b0c4; border-radius: 10px; }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 11px 10px;
+            border-radius: 22px;
+            box-shadow: 0 4px 10px rgba(200, 150, 170, 0.1), inset 0 1px 2px #fff;
+            border: 1px solid #ffe6f0;
+            animation: slideIn 0.25s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tx-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 9px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .tx-icon.income { background: #d9f0e3; color: #2e7353; }
+        .tx-icon.expense { background: #fbe0ea; color: #b34464; }
+
+        .tx-details { flex: 1; min-width: 0; }
+
+        .tx-desc {
+            font-weight: 500;
+            color: #4e2a3b;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tx-date {
+            font-size: 0.65rem;
+            color: #b3889b;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tx-amount {
+            font-weight: 600;
+            font-size: 0.82rem;
+            margin-left: 6px;
+            white-space: nowrap;
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+        }
+
+        .tx-amount.income { color: #277a54; }
+        .tx-amount.expense { color: #b13f60; }
+        .tx-amount small { font-size: 0.58rem; font-weight: 300; }
+
+        .delete-tx {
+            background: transparent;
+            border: none;
+            color: #d9a6ba;
+            cursor: pointer;
+            font-size: 0.95rem;
+            padding: 6px 4px 6px 8px;
+            transition: 0.2s;
+            margin-left: 4px;
+            flex-shrink: 0;
+            touch-action: manipulation;
+        }
+
+        .delete-tx:active { color: #c74b6e; transform: scale(1.15); }
+
+        .empty-message {
+            text-align: center;
+            color: #cfa2b6;
+            font-style: italic;
+            padding: 24px 10px;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .empty-message i { font-size: 1.8rem; color: #eac2d4; }
+
+        /* Xato xabari */
+        .error-banner {
+            display: none;
+            background: #fbe0ea;
+            color: #a1415e;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 0.78rem;
+            margin-bottom: 12px;
+            border: 1px solid #f2cddd;
+            text-align: center;
+        }
+
+        .error-banner.show { display: block; }
+
+        @media (max-width: 380px) {
+            .app-header h1 { font-size: 1.65rem; }
+            .balance-amount { font-size: 2rem; }
+            .balance-stats { gap: 8px; font-size: 0.68rem; }
+            .balance-stats span { padding: 3px 8px; }
+            .btn { font-size: 0.82rem; padding: 12px 6px; }
+            .tx-amount { font-size: 0.75rem; }
+        }
+
+        @media (min-height: 800px) {
+            .transaction-list { max-height: 45vh; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="petals-container" id="petalsContainer"></div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1><i class="fas fa-pen-fancy"></i> Hadicha <i class="fas fa-heart" style="font-size:1.3rem; color:#db7a9a;"></i></h1>
+            <p>✧ xarajat va kirim daftari ✧</p>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot loading" id="statusDot"></span>
+                <span id="statusText">Ulanmoqda...</span>
+            </div>
+        </header>
+
+        <div class="error-banner" id="errorBanner"></div>
+
+        <div class="balance-card">
+            <div class="balance-label">Joriy balans</div>
+            <div class="balance-amount" id="balanceDisplay">0 <small>so'm</small></div>
+            <div class="balance-stats">
+                <span class="income-stat"><i class="fas fa-arrow-down"></i> Kirim: <strong id="totalIncome">0</strong></span>
+                <span class="expense-stat"><i class="fas fa-arrow-up"></i> Chiqim: <strong id="totalExpense">0</strong></span>
+            </div>
+        </div>
+
+        <section class="form-section">
+            <div class="form-title"><i class="fas fa-feather-alt"></i> Yangi yozuv</div>
+
+            <div class="input-group">
+                <label><i class="fas fa-tag"></i> Izoh</label>
+                <input type="text" id="descInput" placeholder="Masalan: oziq-ovqat, maosh..." autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label><i class="fas fa-coins"></i> Summa (so'm)</label>
+                <input type="number" id="amountInput" placeholder="0" min="0" step="any" inputmode="numeric">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-income" id="incomeBtn"><i class="fas fa-plus-circle"></i> Kirim</button>
+                <button class="btn btn-expense" id="expenseBtn"><i class="fas fa-minus-circle"></i> Chiqim</button>
+            </div>
+        </section>
+
+        <section class="list-section">
+            <div class="list-header">
+                <h2><i class="fas fa-history"></i> Tarix</h2>
+                <button class="clear-btn" id="clearAllBtn"><i class="fas fa-trash-alt"></i> Tozalash</button>
+            </div>
+            <ul class="transaction-list" id="transactionList"></ul>
+        </section>
+    </div>
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // ============================================================
+        // ⚠️ FAQAT SHU 2 QATORNI O'ZGARTIRING!
+        // Supabase Dashboard → Project Settings → API dan oling
+        // ============================================================
+        const SUPABASE_URL = 'https://SIZNING-PROJECT-URL.supabase.co';
+        const SUPABASE_ANON_KEY = 'SIZNING-ANON-KALITINGIZ';
+        // ============================================================
+
+        (function() {
+            // Supabase client yaratish
+            const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            let transactions = [];
+            let isOnline = false;
+
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            const totalIncomeEl = document.getElementById('totalIncome');
+            const totalExpenseEl = document.getElementById('totalExpense');
+            const transactionList = document.getElementById('transactionList');
+            const descInput = document.getElementById('descInput');
+            const amountInput = document.getElementById('amountInput');
+            const incomeBtn = document.getElementById('incomeBtn');
+            const expenseBtn = document.getElementById('expenseBtn');
+            const clearAllBtn = document.getElementById('clearAllBtn');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const errorBanner = document.getElementById('errorBanner');
+
+            // ========== STATUS ==========
+            function setStatus(state, text) {
+                statusDot.className = 'status-dot ' + state;
+                statusText.textContent = text;
+                isOnline = state === 'online';
+            }
+
+            function showError(msg) {
+                errorBanner.textContent = msg;
+                errorBanner.classList.add('show');
+                setTimeout(() => errorBanner.classList.remove('show'), 5000);
+            }
+
+            // ========== GUL BARGLARI ==========
+            const petalShapes = [
+                '<svg viewBox="0 0 32 32"><path d="M16 4 C10 4, 4 8, 4 16 C4 24, 10 28, 16 30 C22 28, 28 24, 28 16 C28 8, 22 4, 16 4 Z" fill="#f8b6ce" opacity="0.85"/><path d="M16 8 C12 8, 8 11, 8 16 C8 21, 12 24, 16 25 C20 24, 24 21, 24 16 C24 11, 20 8, 16 8 Z" fill="#f59ab8" opacity="0.7"/></svg>',
+                '<svg viewBox="0 0 32 32"><path d="M16 3 C9 3, 3 9, 3 16 C3 23, 9 29, 16 29 C23 29, 29 23, 29 16 C29 9, 23 3, 16 3 Z" fill="#ffc9de" opacity="0.8"/><path d="M16 7 C11 7, 6 11, 6 16 C6 21, 11 25, 16 25 C21 25, 26 21, 26 16 C26 11, 21 7, 16 7 Z" fill="#ffb0cd" opacity="0.65"/></svg>',
+                '<svg viewBox="0 0 32 32"><path d="M4 16 C4 8, 10 3, 18 3 C26 3, 30 9, 28 16 C26 23, 20 28, 12 27 C6 26, 4 22, 4 16 Z" fill="#c8e6d0" opacity="0.8"/><path d="M8 15 C8 10, 13 6, 18 6 C23 6, 25 10, 23 15 C21 20, 16 23, 11 22 C9 21, 8 18, 8 15 Z" fill="#a8d8b8" opacity="0.7"/></svg>',
+                '<svg viewBox="0 0 32 32"><path d="M16 2 C8 2, 2 8, 2 16 C2 24, 8 30, 16 30 C24 30, 30 24, 30 16 C30 8, 24 2, 16 2 Z" fill="#f7a8c4" opacity="0.8"/><path d="M16 6 C11 6, 6 10, 6 16 C6 22, 11 26, 16 26 C21 26, 26 22, 26 16 C26 10, 21 6, 16 6 Z" fill="#f48fb5" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#ffe0ed" opacity="0.7"/></svg>',
+                '<svg viewBox="0 0 32 32"><path d="M16 3 C10 5, 5 10, 5 17 C5 24, 10 29, 16 29 C22 29, 27 24, 27 17 C27 10, 22 5, 16 3 Z" fill="#dcc4ec" opacity="0.8"/><path d="M16 7 C12 9, 9 13, 9 17 C9 21, 12 25, 16 25 C20 25, 23 21, 23 17 C23 13, 20 9, 16 7 Z" fill="#c9a8e0" opacity="0.65"/></svg>',
+                '<svg viewBox="0 0 32 32"><path d="M16 2 C9 2, 3 8, 3 16 C3 24, 9 30, 16 30 C23 30, 29 24, 29 16 C29 8, 23 2, 16 2 Z" fill="#f9c8d8" opacity="0.8"/><path d="M16 6 C11 6, 6 10, 6 16 C6 22, 11 26, 16 26 C21 26, 26 22, 26 16 C26 10, 21 6, 16 6 Z" fill="#f5a8c0" opacity="0.7"/><path d="M16 10 C13 10, 10 13, 10 16 C10 19, 13 22, 16 22 C19 22, 22 19, 22 16 C22 13, 19 10, 16 10 Z" fill="#f08aa8" opacity="0.6"/></svg>',
+                '<svg viewBox="0 0 32 32"><path d="M16 3 C10 3, 4 9, 4 16 C4 23, 10 29, 16 29 C22 29, 28 23, 28 16 C28 9, 22 3, 16 3 Z" fill="#ffe4ee" opacity="0.9"/><path d="M16 8 C12 8, 8 11, 8 16 C8 21, 12 24, 16 24 C20 24, 24 21, 24 16 C24 11, 20 8, 16 8 Z" fill="#ffd0e0" opacity="0.75"/></svg>'
+            ];
+
+            function createPetal() {
+                const container = document.getElementById('petalsContainer');
+                if (!container) return;
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.innerHTML = petalShapes[Math.floor(Math.random() * petalShapes.length)];
+                const size = 14 + Math.random() * 18;
+                petal.style.width = size + 'px';
+                petal.style.height = size + 'px';
+                petal.style.left = Math.random() * 100 + '%';
+                const duration = 8 + Math.random() * 8;
+                petal.style.animationDuration = duration + 's';
+                petal.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(petal);
+                setTimeout(() => { if (petal.parentNode) petal.remove(); }, (duration + 2) * 1000);
+            }
+
+            function startPetals() {
+                for (let i = 0; i < 8; i++) setTimeout(createPetal, i * 400);
+                setInterval(() => {
+                    const count = Math.random() > 0.7 ? 2 : 1;
+                    for (let i = 0; i < count; i++) setTimeout(createPetal, i * 200);
+                }, 900);
+            }
+
+            // ========== SUPABASE: O'QISH ==========
+            async function loadFromSupabase() {
+                setStatus('loading', 'Yuklanmoqda...');
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('transactions')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) throw error;
+
+                    transactions = (data || []).map(t => ({
+                        id: t.id,
+                        type: t.type,
+                        desc: t.description,
+                        amount: Number(t.amount),
+                        date: t.created_at
+                    }));
+
+                    setStatus('online', 'Bulutga ulangan ✓');
+                    renderAll();
+                } catch (err) {
+                    console.error('Supabase xato:', err);
+                    setStatus('offline', 'Oflayn rejim');
+                    showError('Bulutga ulanib bo\'lmadi. Ma\'lumotlar vaqtincha saqlanmaydi.');
+                    // Fallback: localStorage dan yuklash
+                    loadFromLocalStorage();
+                }
+            }
+
+            function loadFromLocalStorage() {
+                const stored = localStorage.getItem('hadicha_transactions');
+                if (stored) {
+                    try { transactions = JSON.parse(stored); } catch (e) { transactions = []; }
+                } else {
+                    transactions = [];
+                }
+                renderAll();
+            }
+
+            function saveToLocalStorage() {
+                localStorage.setItem('hadicha_transactions', JSON.stringify(transactions));
+            }
+
+            // ========== SUPABASE: QO'SHISH ==========
+            async function addTransaction(type) {
+                const desc = descInput.value.trim();
+                const amount = parseFloat(amountInput.value);
+
+                if (!desc) { alert('Iltimos, izoh kiriting.'); descInput.focus(); return; }
+                if (isNaN(amount) || amount <= 0) { alert('Iltimos, 0 dan katta summa kiriting.'); amountInput.focus(); return; }
+
+                // Tugmalarni vaqtincha bloklash
+                incomeBtn.disabled = true;
+                expenseBtn.disabled = true;
+
+                try {
+                    if (isOnline) {
+                        // Supabase ga yozish
+                        const { data, error } = await supabaseClient
+                            .from('transactions')
+                            .insert({
+                                type: type,
+                                description: desc,
+                                amount: amount
+                            })
+                            .select()
+                            .single();
+
+                        if (error) throw error;
+
+                        const newTx = {
+                            id: data.id,
+                            type: data.type,
+                            desc: data.description,
+                            amount: Number(data.amount),
+                            date: data.created_at
+                        };
+                        transactions.unshift(newTx);
+                    } else {
+                        // Oflayn: localStorage
+                        const newTx = {
+                            id: Date.now() + Math.floor(Math.random() * 1000),
+                            type: type,
+                            desc: desc,
+                            amount: amount,
+                            date: new Date().toISOString()
+                        };
+                        transactions.unshift(newTx);
+                        saveToLocalStorage();
+                    }
+
+                    renderAll();
+                    descInput.value = '';
+                    amountInput.value = '';
+                    descInput.focus();
+                } catch (err) {
+                    console.error('Qo\'shish xatosi:', err);
+                    showError('Yozuvni saqlab bo\'lmadi: ' + (err.message || 'noma\'lum xato'));
+                } finally {
+                    incomeBtn.disabled = false;
+                    expenseBtn.disabled = false;
+                }
+            }
+
+            // ========== SUPABASE: O'CHIRISH ==========
+            async function deleteTransaction(id) {
+                if (!confirm('Bu yozuvni o\'chirmoqchimisiz?')) return;
+
+                try {
+                    if (isOnline) {
+                        const { error } = await supabaseClient
+                            .from('transactions')
+                            .delete()
+                            .eq('id', id);
+                        if (error) throw error;
+                    }
+                    transactions = transactions.filter(t => t.id !== id);
+                    if (!isOnline) saveToLocalStorage();
+                    renderAll();
+                } catch (err) {
+                    console.error('O\'chirish xatosi:', err);
+                    showError('Yozuvni o\'chirib bo\'lmadi: ' + (err.message || 'noma\'lum xato'));
+                }
+            }
+
+            async function clearAllTransactions() {
+                if (transactions.length === 0) return;
+                if (!confirm('Barcha yozuvlarni o\'chirmoqchimisiz?')) return;
+
+                try {
+                    if (isOnline) {
+                        const { error } = await supabaseClient
+                            .from('transactions')
+                            .delete()
+                            .neq('id', 0); // barcha yozuvlarni o'chirish
+                        if (error) throw error;
+                    }
+                    transactions = [];
+                    if (!isOnline) saveToLocalStorage();
+                    renderAll();
+                } catch (err) {
+                    console.error('Tozalash xatosi:', err);
+                    showError('Tozalab bo\'lmadi: ' + (err.message || 'noma\'lum xato'));
+                }
+            }
+
+            // ========== HISOBLASH ==========
+            function calculateTotals() {
+                const income = transactions
+                    .filter(t => t.type === 'income')
+                    .reduce((sum, t) => sum + Number(t.amount), 0);
+                const expense = transactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + Number(t.amount), 0);
+                return { income, expense, balance: income - expense };
+            }
+
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+            }
+
+            function formatDate(isoDate) {
+                const d = new Date(isoDate);
+                return d.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            }
+
+            function escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // ========== UI YANGILASH ==========
+            function renderAll() {
+                const { income, expense, balance } = calculateTotals();
+                balanceDisplay.innerHTML = `${formatNumber(balance)} <small>so'm</small>`;
+                totalIncomeEl.textContent = formatNumber(income);
+                totalExpenseEl.textContent = formatNumber(expense);
+                renderTransactionList();
+            }
+
+            function renderTransactionList() {
+                if (transactions.length === 0) {
+                    transactionList.innerHTML = `
+                        <li class="empty-message">
+                            <i class="fas fa-heart-broken"></i>
+                            Hozircha yozuvlar yo'q.<br>
+                            <span style="font-size:0.78rem;">Birinchi kirim yoki chiqimni qo'shing ✨</span>
+                        </li>
+                    `;
+                    return;
+                }
+
+                const sorted = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                let html = '';
+                sorted.forEach(t => {
+                    const isIncome = t.type === 'income';
+                    const amountClass = isIncome ? 'income' : 'expense';
+                    const sign = isIncome ? '+' : '−';
+                    const icon = isIncome ? '<i class="fas fa-arrow-down"></i>' : '<i class="fas fa-arrow-up"></i>';
+                    const displayAmount = formatNumber(t.amount);
+
+                    html += `
+                        <li class="transaction-item" data-id="${t.id}">
+                            <div class="tx-icon ${amountClass}">${icon}</div>
+                            <div class="tx-details">
+                                <div class="tx-desc">${escapeHtml(t.desc || 'Nomsiz')}</div>
+                                <div class="tx-date">
+                                    <i class="far fa-calendar-alt"></i> ${formatDate(t.date)}
+                                </div>
+                            </div>
+                            <div class="tx-amount ${amountClass}">
+                                ${sign} ${displayAmount}<small>so'm</small>
+                            </div>
+                            <button class="delete-tx" data-id="${t.id}" title="O'chirish"><i class="fas fa-times-circle"></i></button>
+                        </li>
+                    `;
+                });
+
+                transactionList.innerHTML = html;
+
+                document.querySelectorAll('.delete-tx').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteTransaction(Number(btn.getAttribute('data-id')));
+                    });
+                });
+            }
+
+            // ========== EVENTLAR ==========
+            incomeBtn.addEventListener('click', () => addTransaction('income'));
+            expenseBtn.addEventListener('click', () => addTransaction('expense'));
+            clearAllBtn.addEventListener('click', clearAllTransactions);
+
+            descInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); amountInput.focus(); }
+            });
+
+            amountInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); descInput.focus(); }
+            });
+
+            // ========== ISHGA TUSHIRISH ==========
+            startPetals();
+            loadFromSupabase();
+
+        })();
+    </script>
+</body>
+</html>

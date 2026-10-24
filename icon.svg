@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fdeff2"/>
+      <stop offset="50%" stop-color="#f8d7e8"/>
+      <stop offset="100%" stop-color="#f3c4e0"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f48fb5"/>
+      <stop offset="100%" stop-color="#d46b8a"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Orqa fon - yumaloq kvadrat -->
+  <rect width="512" height="512" rx="120" fill="url(#bg)"/>
+  
+  <!-- Yumshoq nur -->
+  <circle cx="256" cy="256" r="200" fill="#fff" opacity="0.25"/>
+  
+  <!-- Yurak -->
+  <path d="M256 400 C 160 320, 80 240, 80 170 C 80 110, 130 70, 190 70 C 220 70, 245 85, 256 105 C 267 85, 292 70, 322 70 C 382 70, 432 110, 432 170 C 432 240, 352 320, 256 400 Z" 
+        fill="url(#heart)" 
+        stroke="#b3506b" 
+        stroke-width="6"/>
+  
+  <!-- H harfi (Hadicha) -->
+  <text x="256" y="260" 
+        font-family="Georgia, serif" 
+        font-size="150" 
+        font-weight="bold" 
+        fill="#ffffff" 
+        text-anchor="middle" 
+        dominant-baseline="middle"
+        opacity="0.95">H</text>
+  
+  <!-- Kichik gul bargi (dekorativ) -->
+  <g transform="translate(380 130) rotate(25)">
+    <ellipse cx="0" cy="0" rx="22" ry="30" fill="#ffe4ee" opacity="0.85"/>
+  </g>
+  <g transform="translate(130 380) rotate(-30)">
+    <ellipse cx="0" cy="0" rx="18" ry="26" fill="#ffe4ee" opacity="0.75"/>
+  </g>
+</svg>

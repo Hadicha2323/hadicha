@@ -1,0 +1,32 @@
+{
+  "name": "Hadicha — Xarajat daftari",
+  "short_name": "Hadicha",
+  "description": "Chiroyli va qulay xarajat hamda kirim daftari. Gul barglari animatsiyasi bilan.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdeff2",
+  "theme_color": "#d46b8a",
+  "lang": "uz",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "lifestyle"],
+  "icons": [
+    {
+      "src": "android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
