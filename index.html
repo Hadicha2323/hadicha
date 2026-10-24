@@ -6,7 +6,15 @@
     <meta name="theme-color" content="#fdeff2">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Hadicha">
     <title>Hadicha — Xarajat daftari</title>
+    
+    <!-- Favicon (xatolik chiqmasligi uchun) -->
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -328,6 +336,7 @@
             padding: 18px 12px 14px 12px;
             box-shadow: 0 10px 22px rgba(200, 140, 170, 0.15), inset 0 1px 5px #fff;
             border: 1px solid rgba(255, 220, 235, 0.9);
+            margin-bottom: 18px;
         }
 
         .list-header {
@@ -491,6 +500,29 @@
 
         .error-banner.show { display: block; }
 
+        /* Ilovani o'rnatish tugmasi */
+        .install-btn {
+            display: none;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(145deg, #d46b8a, #b3506b);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 10px 20px rgba(180, 80, 110, 0.3);
+            transition: all 0.2s ease;
+            margin-top: 6px;
+        }
+
+        .install-btn.show { display: flex; }
+        .install-btn:active { transform: scale(0.97); }
+
         @media (max-width: 380px) {
             .app-header h1 { font-size: 1.65rem; }
             .balance-amount { font-size: 2rem; }
@@ -556,26 +588,29 @@
             </div>
             <ul class="transaction-list" id="transactionList"></ul>
         </section>
+
+        <!-- Ilovani o'rnatish tugmasi -->
+        <button class="install-btn" id="installBtn">
+            <i class="fas fa-download"></i> Ilovani telefonga o'rnatish
+        </button>
+
     </div>
 
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // ============================================================
-        // ⚠️ FAQAT SHU 2 QATORNI O'ZGARTIRING!
-        // Supabase Dashboard → Project Settings → API dan oling
+        // SUPABASE SOZLAMALARI
         // ============================================================
-        const SUPABASE_URL = 'https://SIZNING-PROJECT-URL.supabase.co';
-        const SUPABASE_ANON_KEY = 'SIZNING-ANON-KALITINGIZ';
-        // ============================================================
+        const SUPABASE_URL = 'https://cwqnsqturatftqeryzzr.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mAInVS9tPYz5bE40VMA3Ww_X3csmUO5';
 
         (function() {
-            // Supabase client yaratish
             const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             let transactions = [];
             let isOnline = false;
 
+            // DOM elementlar
             const balanceDisplay = document.getElementById('balanceDisplay');
             const totalIncomeEl = document.getElementById('totalIncome');
             const totalExpenseEl = document.getElementById('totalExpense');
@@ -588,6 +623,7 @@
             const statusDot = document.getElementById('statusDot');
             const statusText = document.getElementById('statusText');
             const errorBanner = document.getElementById('errorBanner');
+            const installBtn = document.getElementById('installBtn');
 
             // ========== STATUS ==========
             function setStatus(state, text) {
@@ -663,7 +699,6 @@
                     console.error('Supabase xato:', err);
                     setStatus('offline', 'Oflayn rejim');
                     showError('Bulutga ulanib bo\'lmadi. Ma\'lumotlar vaqtincha saqlanmaydi.');
-                    // Fallback: localStorage dan yuklash
                     loadFromLocalStorage();
                 }
             }
@@ -690,13 +725,11 @@
                 if (!desc) { alert('Iltimos, izoh kiriting.'); descInput.focus(); return; }
                 if (isNaN(amount) || amount <= 0) { alert('Iltimos, 0 dan katta summa kiriting.'); amountInput.focus(); return; }
 
-                // Tugmalarni vaqtincha bloklash
                 incomeBtn.disabled = true;
                 expenseBtn.disabled = true;
 
                 try {
                     if (isOnline) {
-                        // Supabase ga yozish
                         const { data, error } = await supabaseClient
                             .from('transactions')
                             .insert({
@@ -718,7 +751,6 @@
                         };
                         transactions.unshift(newTx);
                     } else {
-                        // Oflayn: localStorage
                         const newTx = {
                             id: Date.now() + Math.floor(Math.random() * 1000),
                             type: type,
@@ -773,7 +805,7 @@
                         const { error } = await supabaseClient
                             .from('transactions')
                             .delete()
-                            .neq('id', 0); // barcha yozuvlarni o'chirish
+                            .neq('id', 0);
                         if (error) throw error;
                     }
                     transactions = [];
@@ -881,6 +913,32 @@
 
             amountInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') { e.preventDefault(); descInput.focus(); }
+            });
+
+            // ========== PWA O'RNATISH (Ilovani yuklab olish) ==========
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.classList.add('show');
+            });
+
+            installBtn.addEventListener('click', async () => {
+                if (!deferredPrompt) {
+                    alert("Brauzeringizda 'Bosh ekranga qo'shish' menyusidan foydalanib ko'ring (masalan: Safari -> Share -> Add to Home Screen).");
+                    return;
+                }
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.classList.remove('show');
+                }
+                deferredPrompt = null;
+            });
+
+            window.addEventListener('appinstalled', () => {
+                installBtn.classList.remove('show');
             });
 
             // ========== ISHGA TUSHIRISH ==========
